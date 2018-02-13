@@ -1,8 +1,10 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 
+app.use(cors())
 app.use(bodyParser.json())
 
 morgan.token('req-data', (req, res) => JSON.stringify(req.body))
@@ -86,7 +88,7 @@ const error = (request, response) => {
 
 app.use(error)
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
