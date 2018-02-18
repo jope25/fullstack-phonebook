@@ -1,16 +1,14 @@
-const Person = require('./models/person')
 const express = require('express')
+const app = express()
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
-const cors = require('cors')
-const app = express()
+const Person = require('./models/person')
 
 app.use(express.static('build'))
-app.use(cors())
 app.use(bodyParser.json())
 
 morgan.token('req-data', (req) => JSON.stringify(req.body))
-app.use(morgan(':method :url :req-data :status :res[content-length] - :response-time ms'))
+app.use(morgan(':method :url :req-data :status - :response-time ms'))
 
 app.get('/api/persons', (request, response) => {
   Person
@@ -37,11 +35,10 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-  const body = request.body
+  const { name, number } = request.body
 
   const person = new Person({
-    name: body.name,
-    number: body.number
+    name, number
   })
 
   person
@@ -72,9 +69,8 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 app.put('/api/persons/:id', (request, response) => {
-  const body = request.body
   const person = {
-    number: body.number
+    number: request.body.number
   }
 
   Person
