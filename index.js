@@ -9,7 +9,7 @@ app.use(express.static('build'))
 app.use(cors())
 app.use(bodyParser.json())
 
-morgan.token('req-data', (req, res) => JSON.stringify(req.body))
+morgan.token('req-data', (req) => JSON.stringify(req.body))
 app.use(morgan(':method :url :req-data :status :res[content-length] - :response-time ms'))
 
 app.get('/api/persons', (request, response) => {
@@ -38,11 +38,6 @@ app.get('/api/persons/:id', (request, response) => {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  if (body.name.length === 0) {
-    return response.status(400).send({ error: 'name missing' })
-  } else if (body.number.length === 0) {
-    return response.status(400).send({ error: 'number missing' })
-  }
 
   const person = new Person({
     name: body.name,
@@ -55,15 +50,23 @@ app.post('/api/persons', (request, response) => {
     .then(savedAndFormattedPerson => {
       response.json(savedAndFormattedPerson)
     })
+    .catch(error => {
+      console.log(error)
+      if (error.name === 'ValidationError') {
+        response.status(400).send({ error: 'name and/or number missing' })
+      } else {
+        response.status(418).send({ error: 'name is already in the phonebook' })
+      }
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
   Person
     .findByIdAndRemove(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
-    .catch(error => {
+    .catch(() => {
       response.status(400).send({ error: 'malformatted id' })
     })
 })
